@@ -4,7 +4,7 @@ from datetime import datetime
 import random
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Absensi KPU HSS - V.1.3", layout="wide")
+st.set_page_config(page_title="Absensi KPU HSS - V.1.4", layout="wide")
 
 # --- DATABASE & CONFIG ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
@@ -62,7 +62,7 @@ st.markdown("""
         border: 1px solid rgba(255, 215, 0, 0.3) !important;
         border-radius: 20px !important;
     }
-    .stTextInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
+    .stTextInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea, .stDateInput input {
         background-color: rgba(0, 0, 0, 0.4) !important;
         color: #ffd700 !important;
         border: 1px solid #5e1515 !important;
@@ -76,7 +76,7 @@ st.markdown("""
         padding: 10px 30px !important; border: none !important;
         box-shadow: 0 4px 15px rgba(212, 32, 32, 0.4) !important;
     }
-    .stButton>button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed !important; }
+    .stButton>button:disabled { background: #333 !important; color: #666 !important; }
     .mon-title { text-align: center; color: #ffd700; font-size: 24px; font-weight: 800; margin-top: 40px; }
     .mobile-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 15px; padding: 15px; margin-bottom: 10px; }
     .card-title { color: #ffd700; font-weight: bold; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; margin-bottom: 8px; }
@@ -115,100 +115,4 @@ def get_mon_data():
 
 mon_data = get_mon_data()
 
-# --- LOGIKA WAKTU ---
-now = datetime.now()
-hari_ini = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][now.weekday()]
-is_weekend = now.weekday() >= 5 
-
-# --- HEADER ---
-st.markdown("<h1>KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
-st.markdown("<p class='software-credit'>O'lia Software Development V.1.3</p>", unsafe_allow_html=True)
-
-# --- FORM ---
-with st.container(border=True):
-    v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Masukkan ID...")
-    pegawai = DB_PEGAWAI.get(v_id)
-    
-    if pegawai:
-        st.markdown(f"<div style='background:rgba(255,215,0,0.1); padding:10px; border-radius:10px; border-left:4px solid #ffd700; color:white; margin-bottom:15px;'><b>Nama Pegawai:</b> {pegawai['nama']}</div>", unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        jenis = st.selectbox("📅 JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Izin", "Off"])
-    
-    status_val = ""
-    tgl_mulai = None
-    with col_b:
-        if jenis == "Masuk":
-            status_val = st.selectbox("📍 STATUS KEHADIRAN", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"])
-        elif jenis == "Cuti":
-            tgl_mulai = st.date_input("Mulai")
-        else:
-            st.markdown("<br>", unsafe_allow_html=True)
-
-    uraian = output = ""
-    if jenis == "Pulang":
-        uraian = st.text_area("📋 URAIAN TUGAS")
-        output = st.text_area("📦 OUTPUT")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- LOGIKA VALIDASI HARI LIBUR & PIKET (V.1.3) ---
-    can_send = True
-    libur_msg = ""
-    
-    if is_weekend and pegawai:
-        # Cek status terakhir dari monitoring
-        u_info = mon_data.get(pegawai["sheet"], {})
-        # Jika status mengandung kata 'PIKET', berarti dia sedang piket
-        is_piket_now = "PIKET" in str(u_info.get("status", "")).upper()
-
-        if jenis == "Masuk":
-            if status_val not in ["Piket Pagi", "Piket Malam"]:
-                can_send = False
-                libur_msg = f"Hari ini {hari_ini} (Libur). Hanya diperbolehkan absensi Piket."
-        elif jenis == "Pulang":
-            if not is_piket_now:
-                can_send = False
-                libur_msg = "Anda belum absen MASUK PIKET hari ini."
-        elif jenis in ["Cuti", "Off", "Izin"]:
-            can_send = True
-        else:
-            can_send = False
-            libur_msg = "Hari libur. Hanya absensi Piket, Cuti, atau Off yang diizinkan."
-
-    if not can_send and v_id:
-        st.warning(libur_msg)
-
-    # TOMBOL KIRIM
-    left_c, center_c, right_c = st.columns([1, 2, 1])
-    with center_c:
-        if st.button("KIRIM DATA ABSENSI", use_container_width=True, disabled=not can_send):
-            if pegawai:
-                payload = {
-                    "sheetName": pegawai["sheet"], "jenis": jenis, "nama": pegawai["nama"],
-                    "nip": pegawai["nip"], "unit": pegawai["unit"], "status": status_val if jenis == "Masuk" else jenis,
-                    "tanggal": now.strftime("%d/%m/%Y"), "hari": hari_ini,
-                    "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
-                    "uraian": uraian, "output": output
-                }
-                try:
-                    requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
-                    st.balloons()
-                    show_motivation(pegawai['nama'])
-                except: st.error("Gagal terhubung ke Google Spreadsheet!")
-            else: st.error("ID Pegawai Salah!")
-
-# --- MONITORING ---
-st.markdown("<div class='mon-title'>MONITORING KEHADIRAN HARI INI</div>", unsafe_allow_html=True)
-try:
-    for pid in range(1, 31):
-        sid = str(pid)
-        if sid in DB_PEGAWAI:
-            p = DB_PEGAWAI[sid]
-            inf = mon_data.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
-            ket = inf['keterangan'].upper()
-            k_clr = "#00ff88" if "HADIR" in ket else "#ff4444"
-            if any(x in ket for x in ["CUTI", "IZIN", "OFF", "LIBUR"]): k_clr = "#ffff00"
-            st.markdown(f"""<div class="mobile-card"><div class="card-title">{sid}. {p['nama']}</div><div class="card-grid"><div><div class="card-label">Masuk</div><div class="card-val">{inf['jamMasuk']}</div></div><div><div class="card-label">Pulang</div><div class="card-val">{inf['jamPulang']}</div></div><div><div class="card-label">Status</div><div class="card-val">{inf['status']}</div></div><div><div class="card-label">Ket</div><div style="color:{k_clr}; font-size:12px; font-weight:bold;">{ket}</div></div></div></div>""", unsafe_allow_html=True)
-except: st.info("Memproses data...")
+# --- LOGIKA WAKTU
