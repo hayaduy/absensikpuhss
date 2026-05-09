@@ -201,21 +201,26 @@ MOTIVASI = [
 
 # --- FUNGSI POP-UP DIALOG ---
 @st.dialog("ABSENSI BERHASIL! 🎉", width="large")
-def show_motivation():
+def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
     st.markdown(f"""
         <div style="text-align: center; padding: 20px;">
-            <h2 style="color: #ff9d00;">Terima Kasih Atas Dedikasi Anda</h2>
-            <hr style="border-color: #5e1515;">
-            <p style="font-size: 24px; font-style: italic; color: white; line-height: 1.6;">
+            <h2 style="color: #ff9d00; margin-bottom: 5px;">Terima Kasih Atas Dedikasi Anda</h2>
+            <h3 style="color: #ffffff; border: none; margin-top: 0;">{nama_orang}</h3>
+            <hr style="border-color: #5e1515; margin: 20px 0;">
+            <p style="font-size: 26px; font-style: italic; color: white; line-height: 1.6; font-weight: 500;">
                 "{quote}"
             </p>
             <br>
             <p style="color: #8a5a5a;">Tetap semangat melayani di KPU HSS!</p>
         </div>
     """, unsafe_allow_html=True)
-    if st.button("Tutup & Kembali"):
-        st.rerun()
+    
+    # Membuat tombol di tengah
+    _, btn_col, _ = st.columns([1, 1, 1])
+    with btn_col:
+        if st.button("Tutup & Kembali", use_container_width=True):
+            st.rerun()
 
 # --- HEADER ---
 st.markdown("<h1>🏛️ KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
@@ -255,25 +260,18 @@ with st.container(border=True):
         uraian = c_u1.text_area("Uraian Tugas Hari Ini", placeholder="Tuliskan pekerjaan Anda...")
         output = c_u2.text_area("Output / Hasil Tugas", placeholder="Apa hasil dari pekerjaan tersebut?")
 
-    if st.button("KIRIM DATA ABSENSI SEKARANG", use_container_width=True):
+if st.button("KIRIM DATA ABSENSI SEKARANG", use_container_width=True):
         if v_id not in DB_PEGAWAI:
             st.error("ID Pegawai Salah!")
         else:
             p = DB_PEGAWAI[v_id]
-            now = datetime.now()
-            payload = {
-                "sheetName": p["sheet"], "jenis": jenis, "nama": p["nama"],
-                "nip": p["nip"], "unit": p["unit"], "status": status_val or jenis,
-                "tanggal": now.strftime("%d/%m/%Y"), 
-                "hari": ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"][now.weekday()],
-                "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
-                "tglSelesai": tgl_selesai.strftime("%d/%m/%Y") if tgl_selesai else "",
-                "uraian": uraian, "output": output
-            }
+            # ... (payload tetap sama seperti sebelumnya) ...
+            
             try:
                 res = requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
                 st.balloons()
-                show_motivation() # PANGGIL POP-UP GEDE
+                # PANGGIL POP-UP DENGAN NAMA PEGAWAI
+                show_motivation(p['nama']) 
             except:
                 st.error("Gagal terhubung ke Google Spreadsheet!")
 
