@@ -6,49 +6,135 @@ import random
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Absensi KPU HSS - Pro Web", layout="wide")
 
-# --- CSS UNTUK TAMPILAN MAROON GLASS ---
+# --- CSS UNTUK TAMPILAN PRO MODERN (Ganti bagian CSS lama) ---
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #2e0505 0%, #1a0404 100%); }
-    html, body, [class*="css"] { font-family: 'Segoe UI', sans-serif; }
-    
-    /* Card Form */
-    div[data-testid="stVerticalBlock"] > div:has(div.stForm) {
-        background: rgba(61, 10, 10, 0.4);
-        border-radius: 20px;
-        padding: 30px;
-        border: 1px solid rgba(255, 157, 0, 0.2);
+    /* Background Utama Deep Maroon */
+    .stApp {
+        background: radial-gradient(circle at top, #3d0a0a 0%, #1a0404 100%);
     }
 
-    /* Tombol Kirim */
+    /* Container Form - Efek Kaca Tebal */
+    div[data-testid="stVerticalBlockBorder"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 157, 0, 0.1) !important;
+        border-radius: 25px !important;
+        padding: 40px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    }
+
+    /* Perapian Input Field */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
+        border-radius: 12px !important;
+        border: 1px solid #4d1111 !important;
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        color: #ffffff !important;
+        height: 50px !important;
+        transition: 0.3s !important;
+    }
+    
+    .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus {
+        border-color: #ff9d00 !important;
+        box-shadow: 0 0 10px rgba(255, 157, 0, 0.2) !important;
+    }
+
+    /* Label Input */
+    label p {
+        color: #ffcc00 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+    }
+
+    /* Tombol Kirim Eksklusif */
     .stButton>button {
-        background: linear-gradient(90deg, #ff6a00, #ff9d00);
+        background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%) !important;
+        border: none !important;
         color: white !important;
-        border-radius: 12px;
-        height: 55px;
         font-size: 18px !important;
-        font-weight: bold !important;
-        border: none;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    
-    input, div[data-baseweb="select"] > div, textarea {
-        background-color: #1a0404 !important;
-        color: white !important;
-        border: 1px solid #5e1515 !important;
+        font-weight: 700 !important;
+        letter-spacing: 2px !important;
+        border-radius: 15px !important;
+        padding: 25px 0 !important;
+        margin-top: 20px !important;
+        box-shadow: 0 5px 15px rgba(255, 106, 0, 0.3) !important;
+        transition: all 0.4s ease !important;
     }
 
-    h1 { color: #ff9d00 !important; text-align: center; font-weight: 800 !important; }
-    h3 { color: #ffcc00 !important; }
+    .stButton>button:hover {
+        transform: scale(1.01) !important;
+        box-shadow: 0 8px 25px rgba(255, 106, 0, 0.5) !important;
+    }
 
+    /* Nama Pegawai Auto-Show */
+    .nama-pegawai-box {
+        background: rgba(255, 157, 0, 0.1);
+        border-left: 4px solid #ff9d00;
+        padding: 15px 25px;
+        border-radius: 0 15px 15px 0;
+        margin-top: 10px;
+    }
+
+    /* Row Monitoring */
     .monitor-row {
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 5px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
     </style>
     """, unsafe_allow_html=True)
+
+# --- BAGIAN FORM (Ganti struktur ini agar lebih rapi) ---
+st.markdown("### 📝 FORM ABSENSI DIGITAL")
+with st.container(border=True):
+    # Baris 1: ID dan Nama
+    row1_col1, row1_col2 = st.columns([1, 3])
+    with row1_col1:
+        v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Ketik ID...")
+    with row1_col2:
+        if v_id in DB_PEGAWAI:
+            st.markdown(f"""
+                <div class="nama-pegawai-box">
+                    <span style="color:#8a5a5a; font-size:12px; display:block;">PEGAWAI TERDETEKSI:</span>
+                    <span style="color:white; font-size:24px; font-weight:bold;">{DB_PEGAWAI[v_id]['nama']}</span>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("<br><p style='color:#4d1111; font-style:italic;'>Menunggu ID valid...</p>", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin: 15px 0;'></div>", unsafe_allow_html=True) # Spasi
+
+    # Baris 2: Jenis dan Input Khusus
+    row2_col1, row2_col2 = st.columns([2, 2])
+    with row2_col1:
+        jenis = st.selectbox("📅 JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Off Piket", "Izin"])
+    
+    with row2_col2:
+        if jenis == "Masuk":
+            status_val = st.radio("📍 STATUS KEHADIRAN", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"], horizontal=True)
+        elif jenis == "Cuti":
+            c_t1, c_t2 = st.columns(2)
+            tgl_mulai = c_t1.date_input("Mulai")
+            tgl_selesai = c_t2.date_input("Sampai")
+        else:
+            st.markdown("<br><p style='color:#8a5a5a; font-size:12px;'>Data akan diproses sesuai kategori.</p>", unsafe_allow_html=True)
+
+    # Baris 3: Uraian & Output (Jika Pulang)
+    if jenis == "Pulang":
+        st.markdown("---")
+        uraian = st.text_area("📋 URAIAN TUGAS HARI INI", placeholder="Ceritakan apa yang Anda kerjakan hari ini...", height=120)
+        output = st.text_area("📦 OUTPUT / HASIL TUGAS", placeholder="Apa hasil nyata dari pekerjaan tersebut?", height=120)
+    else:
+        uraian = output = ""
+        tgl_mulai = tgl_selesai = ""
+
+    # Tombol Kirim
+    st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
+    if st.button("KONFIRMASI & KIRIM ABSENSI SEKARANG", use_container_width=True):
+        # ... (Logika kirim payload tetap sama seperti sebelumnya) ...
 
 # --- DATABASE ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
