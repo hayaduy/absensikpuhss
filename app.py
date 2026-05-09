@@ -4,87 +4,49 @@ from datetime import datetime
 import random
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Absensi KPU HSS - Pro Web", layout="wide")
+st.set_page_config(page_title="Absensi KPU HSS - Mobile Pro", layout="wide")
 
-# --- CSS UNTUK TAMPILAN PRO MODERN ---
+# --- CSS PRO MOBILE OPTIMIZED ---
 st.markdown("""
     <style>
-    /* Background Utama Deep Maroon */
-    .stApp {
-        background: radial-gradient(circle at top, #3d0a0a 0%, #1a0404 100%);
-    }
-
-    /* Container Form - Efek Kaca Tebal */
+    .stApp { background: radial-gradient(circle at top, #3d0a0a 0%, #1a0404 100%); }
+    
+    /* Container Form */
     div[data-testid="stVerticalBlockBorder"] {
         background: rgba(255, 255, 255, 0.03) !important;
         border: 1px solid rgba(255, 157, 0, 0.1) !important;
-        border-radius: 25px !important;
-        padding: 40px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
     }
 
-    /* Perapian Input Field */
-    .stTextInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        border-radius: 12px !important;
-        border: 1px solid #4d1111 !important;
-        background-color: rgba(0, 0, 0, 0.3) !important;
-        color: #ffffff !important;
-        height: 50px !important;
-        transition: 0.3s !important;
-    }
-    
-    .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus {
-        border-color: #ff9d00 !important;
-        box-shadow: 0 0 10px rgba(255, 157, 0, 0.2) !important;
-    }
-
-    /* Label Input */
-    label p {
-        color: #ffcc00 !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        letter-spacing: 1px !important;
-        text-transform: uppercase !important;
-    }
-
-    /* Tombol Kirim Eksklusif */
-    .stButton>button {
-        background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%) !important;
-        border: none !important;
-        color: white !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        letter-spacing: 2px !important;
-        border-radius: 15px !important;
-        padding: 25px 0 !important;
-        margin-top: 20px !important;
-        box-shadow: 0 5px 15px rgba(255, 106, 0, 0.3) !important;
-        transition: all 0.4s ease !important;
-    }
-
-    /* Nama Pegawai Auto-Show */
+    /* Nama Pegawai Box */
     .nama-pegawai-box {
         background: rgba(255, 157, 0, 0.1);
         border-left: 4px solid #ff9d00;
-        padding: 15px 25px;
-        border-radius: 0 15px 15px 0;
-        margin-top: 10px;
+        padding: 10px 20px;
+        border-radius: 0 10px 10px 0;
+        margin: 10px 0;
     }
 
-    /* Row Monitoring */
-    .monitor-row {
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 12px;
-        margin-bottom: 8px;
+    /* Kartu Monitoring untuk HP */
+    .mobile-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
         padding: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 15px;
     }
     
-    h1 { color: #ff9d00 !important; text-align: center; font-weight: 800 !important; }
+    .card-title { color: #ffd1d1; font-weight: bold; font-size: 18px; margin-bottom: 5px; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card-label { color: #8a5a5a; font-size: 12px; text-transform: uppercase; }
+    .card-val { color: #ff9d00; font-weight: bold; font-size: 14px; }
+
+    h1 { color: #ff9d00 !important; text-align: center; font-size: 24px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- DATABASE ---
+# --- DATABASE (Tetap Sama) ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
 
 DB_PEGAWAI = {
@@ -213,138 +175,92 @@ MOTIVASI = [
     "Tuhan bersama orang-orang yang bersungguh-sungguh dalam kebaikan."
 ]
 
-# --- FUNGSI POP-UP DIALOG ---
-@st.dialog(" ") 
+@st.dialog(" ")
 def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
-    st.markdown(f"""
-        <div style="text-align: center; padding: 0px; margin-top: -30px;">
-            <h1 style="font-size: 28px; color: #ff9d00; margin-bottom: 20px;">ABSENSI BERHASIL! 🎉</h1>
-            <h3 style="color: #ffffff; margin-bottom: 5px; border: none; font-size: 20px;">Terima Kasih Atas Dedikasi</h3>
-            <h2 style="color: #ffcc00; border: none; margin-top: 0; font-size: 35px;">{nama_orang}</h2>
-            <hr style="border-color: #5e1515; margin: 25px 0;">
-            <p style="font-size: 24px; font-style: italic; color: white; line-height: 1.6; font-weight: 500;">
-                "{quote}"
-            </p>
-            <br>
-            <p style="color: #8a5a5a; font-size: 14px;">Tetap semangat melayani di KPU HSS!</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_a, col_b, col_c = st.columns([1, 1.2, 1])
-    with col_b:
-        if st.button("Tutup & Kembali", use_container_width=True):
-            st.rerun()
+    st.markdown(f"<div style='text-align:center;'><h2>BERHASIL!</h2><h3>{nama_orang}</h3><hr><p>'{quote}'</p></div>", unsafe_allow_html=True)
+    if st.button("Tutup", use_container_width=True): st.rerun()
 
-# --- HEADER ---
-st.markdown("<h1>🏛️ KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#8a5a5a;'>O'lia Software Development v1.0 | Web Responsive Pro</p>", unsafe_allow_html=True)
+# --- FORM ---
+st.markdown("<h1>🏛️ KPU KABUPATEN HSS</h1>", unsafe_allow_html=True)
 
-# --- FORM ABSENSI ---
-st.markdown("### 📝 FORM ABSENSI DIGITAL")
 with st.container(border=True):
-    row1_col1, row1_col2 = st.columns([1, 3])
-    with row1_col1:
-        v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Ketik ID...")
-    with row1_col2:
-        if v_id in DB_PEGAWAI:
-            st.markdown(f"""
-                <div class="nama-pegawai-box">
-                    <span style="color:#8a5a5a; font-size:12px; display:block;">PEGAWAI TERDETEKSI:</span>
-                    <span style="color:white; font-size:24px; font-weight:bold;">{DB_PEGAWAI[v_id]['nama']}</span>
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("<br><p style='color:#4d1111; font-style:italic;'>Menunggu ID valid...</p>", unsafe_allow_html=True)
-
-    st.markdown("<div style='margin: 15px 0;'></div>", unsafe_allow_html=True)
-
-    row2_col1, row2_col2 = st.columns([2, 2])
-    with row2_col1:
-        jenis = st.selectbox("📅 JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Off Piket", "Izin"])
+    v_id = st.text_input("🆔 ID PEGAWAI")
+    if v_id in DB_PEGAWAI:
+        st.markdown(f"<div class='nama-pegawai-box'><b>{DB_PEGAWAI[v_id]['nama']}</b></div>", unsafe_allow_html=True)
     
-    with row2_col2:
-        status_val = ""
-        tgl_mulai = tgl_selesai = None
-        if jenis == "Masuk":
-            status_val = st.radio("📍 STATUS KEHADIRAN", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"], horizontal=True)
-        elif jenis == "Cuti":
-            c_t1, c_t2 = st.columns(2)
-            tgl_mulai = c_t1.date_input("Mulai")
-            tgl_selesai = c_t2.date_input("Sampai")
-        else:
-            st.markdown("<br><p style='color:#8a5a5a; font-size:12px;'>Data akan diproses sesuai kategori.</p>", unsafe_allow_html=True)
-
+    jenis = st.selectbox("📅 JENIS", ["Masuk", "Pulang", "Cuti", "Izin"])
+    
+    status_val = ""
+    tgl_mulai = tgl_selesai = None
+    if jenis == "Masuk":
+        status_val = st.radio("📍 STATUS", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"], horizontal=True)
+    elif jenis == "Cuti":
+        tgl_mulai = st.date_input("Mulai")
+        tgl_selesai = st.date_input("Sampai")
+    
     uraian = output = ""
     if jenis == "Pulang":
-        st.markdown("---")
-        uraian = st.text_area("📋 URAIAN TUGAS HARI INI", placeholder="Ceritakan pekerjaan Anda...", height=120)
-        output = st.text_area("📦 OUTPUT / HASIL TUGAS", placeholder="Apa hasil nyata pekerjaan tersebut?", height=120)
+        uraian = st.text_area("📋 URAIAN")
+        output = st.text_area("📦 OUTPUT")
 
-    st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
-    
-    if st.button("KONFIRMASI & KIRIM ABSENSI SEKARANG", use_container_width=True):
-        if v_id not in DB_PEGAWAI:
-            st.error("ID Pegawai Salah atau Belum Diisi!")
-        else:
+    if st.button("KIRIM ABSENSI", use_container_width=True):
+        if v_id in DB_PEGAWAI:
             p = DB_PEGAWAI[v_id]
-            now = datetime.now()
-            
             payload = {
-                "sheetName": p["sheet"], 
-                "jenis": jenis, 
-                "nama": p["nama"],
-                "nip": p["nip"], 
-                "unit": p["unit"], 
-                "status": status_val if jenis == "Masuk" else jenis,
-                "tanggal": now.strftime("%d/%m/%Y"), 
-                "hari": ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"][now.weekday()],
-                "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if (jenis == "Cuti" and tgl_mulai) else "",
-                "tglSelesai": tgl_selesai.strftime("%d/%m/%Y") if (jenis == "Cuti" and tgl_selesai) else "",
-                "uraian": uraian if jenis == "Pulang" else "", 
-                "output": output if jenis == "Pulang" else ""
+                "sheetName": p["sheet"], "jenis": jenis, "nama": p["nama"],
+                "nip": p["nip"], "unit": p["unit"], "status": status_val if jenis == "Masuk" else jenis,
+                "tanggal": datetime.now().strftime("%d/%m/%Y"),
+                "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
+                "tglSelesai": tgl_selesai.strftime("%d/%m/%Y") if tgl_selesai else "",
+                "uraian": uraian, "output": output
             }
-            
             try:
-                res = requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
+                requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
                 st.balloons()
                 show_motivation(p['nama'])
-            except Exception as e:
-                st.error(f"Gagal terhubung ke Google Spreadsheet! Error: {str(e)}")
+            except: st.error("Gagal")
 
-# --- MONITORING KEHADIRAN ---
+# --- MONITORING MOBILE FRIENDLY ---
 st.markdown("---")
-st.markdown("### 📊 MONITORING KEHADIRAN HARI INI")
+st.markdown("### 📊 MONITORING HARI INI")
 
 try:
     mon_res = requests.get(URL_APPS_SCRIPT, timeout=10).json()
-    h1, h2, h3, h4, h5, h6 = st.columns([1, 4, 2, 2, 2, 3])
-    labels = ["ID", "NAMA PEGAWAI", "MASUK", "PULANG", "STATUS", "KETERANGAN"]
-    for c, l in zip([h1, h2, h3, h4, h5, h6], labels):
-        c.markdown(f"<p style='color:#8a5a5a; font-weight:bold; text-align:center; font-size:12px;'>{l}</p>", unsafe_allow_html=True)
-
+    
     for i in range(1, 31):
         pid = str(i)
         if pid in DB_PEGAWAI:
             p = DB_PEGAWAI[pid]
             inf = mon_res.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
             
-            st.markdown(f"<div class='monitor-row'>", unsafe_allow_html=True)
-            r1, r2, r3, r4, r5, r6 = st.columns([1, 4, 2, 2, 2, 3])
-            
-            r1.markdown(f"<p style='text-align:center;'>{pid}</p>", unsafe_allow_html=True)
-            r2.markdown(f"<span style='color:#ffd1d1; font-weight:bold;'>{p['nama']}</span>", unsafe_allow_html=True)
-            r3.markdown(f"<p style='text-align:center; color:#ff9d00; font-weight:bold;'>{inf['jamMasuk']}</p>", unsafe_allow_html=True)
-            r4.markdown(f"<p style='text-align:center; color:#ff9d00; font-weight:bold;'>{inf['jamPulang']}</p>", unsafe_allow_html=True)
-            r5.markdown(f"<p style='text-align:center; color:white;'>{inf['status']}</p>", unsafe_allow_html=True)
-            
             ket = inf['keterangan'].upper()
-            k_clr = "#00ff88"
-            if "BELUM" in ket: k_clr = "#ff4444"
-            elif any(x in ket for x in ["CUTI", "IZIN", "OFF"]): k_clr = "#ffff00"
-            elif "DINAS" in ket: k_clr = "#e0b0ff"
-            
-            r6.markdown(f"<p style='text-align:center; color:{k_clr}; font-weight:bold;'>{ket}</p>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-except Exception as e:
-    st.info("Menunggu data sinkronisasi...")
+            k_clr = "#00ff88" if "HADIR" in ket else "#ff4444"
+            if any(x in ket for x in ["CUTI", "IZIN", "OFF"]): k_clr = "#ffff00"
+
+            # TAMPILAN CARD (COCOK UNTUK HP)
+            st.markdown(f"""
+                <div class="mobile-card">
+                    <div class="card-title">{pid}. {p['nama']}</div>
+                    <div class="card-grid">
+                        <div>
+                            <div class="card-label">Masuk</div>
+                            <div class="card-val">{inf['jamMasuk']}</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Pulang</div>
+                            <div class="card-val">{inf['jamPulang']}</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Status</div>
+                            <div class="card-val">{inf['status']}</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Keterangan</div>
+                            <div style="color:{k_clr}; font-weight:bold; font-size:14px;">{ket}</div>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+except:
+    st.info("Memuat data...")
