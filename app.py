@@ -179,24 +179,26 @@ MOTIVASI = [
     "Tuhan bersama orang-orang yang bersungguh-sungguh dalam kebaikan."
 ]
 
-# --- FUNGSI POP-UP DIALOG (VERSI NETRAL TANPA 'BANG') ---
-@st.dialog("ABSENSI BERHASIL! 🎉", width="large")
+# --- FUNGSI POP-UP DIALOG (VERSI SEMUA DI TENGAH) ---
+@st.dialog("") # Judul asli dikosongkan agar kita bisa buat judul custom di tengah
 def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
     st.markdown(f"""
-        <div style="text-align: center; padding: 10px;">
-            <h2 style="color: #ff9d00; margin-bottom: 5px;">Terima Kasih Atas Dedikasi</h2>
-            <h3 style="color: #ffffff; border: none; margin-top: 0; font-size: 32px;">{nama_orang}</h3>
-            <hr style="border-color: #5e1515; margin: 20px 0;">
-            <p style="font-size: 26px; font-style: italic; color: white; line-height: 1.6;">
+        <div style="text-align: center; padding: 0px;">
+            <h1 style="font-size: 28px; margin-bottom: 20px;">ABSENSI BERHASIL! 🎉</h1>
+            <h3 style="color: #ff9d00; margin-bottom: 5px; border: none;">Terima Kasih Atas Dedikasi</h3>
+            <h2 style="color: #ffffff; border: none; margin-top: 0; font-size: 35px;">{nama_orang}</h2>
+            <hr style="border-color: #5e1515; margin: 25px 0;">
+            <p style="font-size: 26px; font-style: italic; color: white; line-height: 1.6; font-weight: 500;">
                 "{quote}"
             </p>
             <br>
-            <p style="color: #8a5a5a;">Tetap semangat melayani di KPU HSS!</p>
+            <p style="color: #8a5a5a; font-size: 14px;">Tetap semangat melayani di KPU HSS!</p>
         </div>
     """, unsafe_allow_html=True)
     
-    col_a, col_b, col_c = st.columns([1, 1, 1])
+    # Tombol Tutup di Tengah
+    col_a, col_b, col_c = st.columns([1, 1.2, 1])
     with col_b:
         if st.button("Tutup & Kembali", use_container_width=True):
             st.rerun()
