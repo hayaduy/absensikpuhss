@@ -43,11 +43,9 @@ DB_PEGAWAI = {
 }
 
 MOTIVASI = [
-    "Kadada nang labih manis selain lihum pian hari ini.",
-    "Biar dunya baputar hancap, hati ulun tatap diam di wadah pian haja.",
-    "Dasar lain mun sudah gajihan nih, tihang listrik gin dilihumi.",
-    "Kira-kira pian baisi rahasia lah? Rahasia ulun cuma sabuting: ulun sayang lawan pian.",
-    "Jangan tapi dipikirakan banar gawian tu, kaina hancap tuha muha kaya iwak karing."
+
+    "Sudahkah pian lihum hari ini? Soalnya lihum pian tu meluluh lantakkan gambah dan sekitarnya.",
+    
 ]
 
 # --- CSS MEWAH ---
