@@ -121,14 +121,6 @@ MOTIVASI = [
     "Jangan tamakan janji,sidin bahanu ada wisanya",
     "Apa nang labih rami: ma-awas sidin bagawi kah ma-awas sidin guring?",
     "Kadada nang lebih manis selain senyuman pian",
-    Wah, itu maut banar rayuannya, Bang! Bahasanya halus tapi menusuk langsung ke hati. Gaya merayu urang Banjar nih emang unik, biasanya pakai perumpamaan makanan manis, keindahan alam Banua, atau istilah-istilah nang membuat urang marlung (terpesona).
-
-Ini ulun carikan 90 Kata-kata Rayuan/Gombalan Basa Banjar nang santai, lucu, wan romantis. Cocok banar sagan ditaruh di pop-up absen biar kakawanan nang lagi kasmaran makin lihum saurangan.
-
-Silakan ganti isi MOTIVASI = [...] Abang lawan daftar ini:
-
-Python
-MOTIVASI = [
     "Kadada nang labih manis selain lihum pian hari ini.",
     "Dasar lain mun sudah gajihan nih, tihang listrik gin dilihumi",
     "Biar dodol Kandangan manis rasanya, tatap kalah lawan manisnya lihum pian.",
