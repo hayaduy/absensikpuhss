@@ -4,7 +4,7 @@ from datetime import datetime
 import random
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Absensi KPU HSS - V.1.4", layout="wide")
+st.set_page_config(page_title="Absensi KPU HSS - V.1.5", layout="wide")
 
 # --- DATABASE & CONFIG ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
@@ -45,12 +45,9 @@ DB_PEGAWAI = {
 MOTIVASI = [
     "Kadada nang labih manis selain lihum pian hari ini.",
     "Biar dunya baputar hancap, hati ulun tatap diam di wadah pian haja.",
-    "Apa nang labih manis: dodol Kandangan kah lihum manis sidin?",
-    "Dasar lain mun sudah gajihan nih, tihang listrik gin dilihumi",
+    "Dasar lain mun sudah gajihan nih, tihang listrik gin dilihumi.",
     "Kira-kira pian baisi rahasia lah? Rahasia ulun cuma sabuting: ulun sayang lawan pian.",
-    "Jangan tamakan janji, sidin bahanu ada wisanya",
-    "Pian ni kaya wadai bingka, manisnya pas, maulah ulun handak tarus.",
-    "Jangan tapi dipikirakan banar gawian tu, kaina hancap tuha muha kaya iwak karing talambat diangkat."
+    "Jangan tapi dipikirakan banar gawian tu, kaina hancap tuha muha kaya iwak karing."
 ]
 
 # --- CSS MEWAH ---
@@ -94,7 +91,7 @@ def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
     st.markdown(f"""
         <div style="text-align: center; background: radial-gradient(#6e1a1a, #2b0606); padding: 20px; border-radius: 15px; border: 2px solid #ffd700;">
-            <h2 style="color: #ffd700; margin-bottom: 5px;">BERHASIL! 🎊</h2>
+            <h2 style="color: #ffd700; margin-bottom: 5px;">ABSENSI BERHASIL! 🎊</h2>
             <h3 style="color: white; border:none;">{nama_orang}</h3>
             <hr style="border-color: rgba(255,215,0,0.3);">
             <p style="font-size: 18px; font-style: italic; color: #fff;">"{quote}"</p>
@@ -108,10 +105,8 @@ def show_motivation(nama_orang):
 # --- FETCH DATA MONITORING ---
 @st.cache_data(ttl=30)
 def get_mon_data():
-    try:
-        return requests.get(URL_APPS_SCRIPT, timeout=10).json()
-    except:
-        return {}
+    try: return requests.get(URL_APPS_SCRIPT, timeout=10).json()
+    except: return {}
 
 mon_data = get_mon_data()
 
@@ -122,29 +117,29 @@ is_weekend = now.weekday() >= 5
 
 # --- HEADER ---
 st.markdown("<h1>KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
-st.markdown("<p class='software-credit'>O'lia Software Development V.1.4</p>", unsafe_allow_html=True)
+st.markdown("<p class='software-credit'>O'lia Software Development V.1.5</p>", unsafe_allow_html=True)
 
 # --- FORM ---
 with st.container(border=True):
-    v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Masukkan ID...")
-    pegawai = DB_PEGAWAI.get(v_id)
+    # TIPS: Langsung muncul nama tanpa Enter
+    v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Ketik ID Anda...")
     
+    pegawai = DB_PEGAWAI.get(v_id)
     if pegawai:
         st.markdown(f"<div style='background:rgba(255,215,0,0.1); padding:10px; border-radius:10px; border-left:4px solid #ffd700; color:white; margin-bottom:15px;'><b>Nama Pegawai:</b> {pegawai['nama']}</div>", unsafe_allow_html=True)
+    elif v_id != "":
+        st.markdown(f"<div style='color:#ff4444; font-size:12px; margin-bottom:10px;'>ID '{v_id}' tidak ditemukan...</div>", unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
     with col_a:
         jenis = st.selectbox("📅 JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Izin", "Off"])
     
     status_val = ""
-    tgl_mulai = None
-    tgl_selesai = None
-    
+    tgl_mulai = tgl_selesai = None
     with col_b:
         if jenis == "Masuk":
             status_val = st.selectbox("📍 STATUS KEHADIRAN", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"])
         elif jenis == "Cuti":
-            # Perbaikan: Input tanggal Mulai dan Sampai
             c1, c2 = st.columns(2)
             tgl_mulai = c1.date_input("Mulai")
             tgl_selesai = c2.date_input("Sampai")
@@ -161,11 +156,9 @@ with st.container(border=True):
     # --- LOGIKA VALIDASI HARI LIBUR & PIKET ---
     can_send = True
     libur_msg = ""
-    
     if is_weekend and pegawai:
         u_info = mon_data.get(pegawai["sheet"], {})
         is_piket_now = "PIKET" in str(u_info.get("status", "")).upper()
-
         if jenis == "Masuk":
             if status_val not in ["Piket Pagi", "Piket Malam"]:
                 can_send = False
@@ -200,8 +193,8 @@ with st.container(border=True):
                     requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
                     st.balloons()
                     show_motivation(pegawai['nama'])
-                except: st.error("Gagal terhubung ke Google Spreadsheet!")
-            else: st.error("ID Pegawai Salah!")
+                except: st.error("Gagal terhubung ke Spreadsheet!")
+            else: st.error("ID Belum diisi/salah!")
 
 # --- MONITORING ---
 st.markdown("<div class='mon-title'>MONITORING KEHADIRAN HARI INI</div>", unsafe_allow_html=True)
