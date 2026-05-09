@@ -2,33 +2,74 @@ import streamlit as st
 import requests
 from datetime import datetime
 import random
-import pandas as pd
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Absensi KPU HSS", layout="wide")
+st.set_page_config(page_title="Absensi KPU HSS - Pro Web", layout="wide")
 
-# Custom CSS untuk efek Maroon Glass & UI Modern
+# --- CSS UNTUK TAMPILAN MAROON GLASS ---
 st.markdown("""
     <style>
-    .main { background-color: #2e0505; }
-    .stApp { background: linear-gradient(to bottom, #2e0505, #1a0404); }
-    h1, h2, h3 { color: #ff9d00 !important; font-family: 'Segoe UI'; }
-    .stButton>button { 
-        background-color: #ff6a00; color: white; border-radius: 10px; 
-        width: 100%; font-weight: bold; border: none; height: 3em;
+    /* Background Utama */
+    .stApp {
+        background: linear-gradient(135deg, #2e0505 0%, #1a0404 100%);
     }
-    .stButton>button:hover { background-color: #e65c00; border: none; color: white; }
-    div[data-baseweb="select"] > div { background-color: #1a0404 !important; color: white !important; border: 1px solid #5e1515; }
-    input { background-color: #1a0404 !important; color: white !important; border: 1px solid #ff9d00 !important; }
-    textarea { background-color: #1a0404 !important; color: white !important; border: 1px solid #5e1515 !important; }
-    .status-card { 
-        background-color: #330808; padding: 15px; border-radius: 15px; 
-        border: 1px solid #3d0a0a; margin-bottom: 10px;
+    
+    /* Font Global */
+    html, body, [class*="css"] {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    /* Card Glassmorphism untuk Form */
+    div[data-testid="stVerticalBlock"] > div:has(div.stForm) {
+        background: rgba(61, 10, 10, 0.4);
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid rgba(255, 157, 0, 0.2);
+    }
+
+    /* Tombol Kirim Gede */
+    .stButton>button {
+        background: linear-gradient(90deg, #ff6a00, #ff9d00);
+        color: white !important;
+        border-radius: 12px;
+        height: 55px;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: 0.3s;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 106, 0, 0.4);
+    }
+
+    /* Input & Select Box */
+    input, div[data-baseweb="select"] > div, textarea {
+        background-color: #1a0404 !important;
+        color: white !important;
+        border: 1px solid #5e1515 !important;
+        border-radius: 10px !important;
+    }
+
+    /* Styling Judul */
+    h1 { color: #ff9d00 !important; text-align: center; font-weight: 800 !important; }
+    h3 { color: #ffcc00 !important; border-bottom: 2px solid #5e1515; padding-bottom: 10px; }
+
+    /* Custom Row Monitoring */
+    .monitor-row {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 5px;
+        transition: 0.2s;
+    }
+    .monitor-row:hover { background: rgba(255, 255, 255, 0.07); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- DATA PEGAWAI & URL ---
+# --- DATABASE & DATA ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
 
 DB_PEGAWAI = {
@@ -64,6 +105,7 @@ DB_PEGAWAI = {
     "30": {"nama": "Nadianti", "sheet": "Nadianti", "nip": "19990606 202521 2 036", "unit": "KPU KAB. HULU SUNGAI SELATAN"}
 }
 
+# (Daftar Motivasi tetap 90 seperti sebelumnya...)
 MOTIVASI = [
     "Kerja keras tidak akan mengkhianati hasil. Semangat, Bang!",
     "Jangan menunggu sukses untuk bersyukur, bersyukurlah maka sukses akan datang.",
@@ -157,121 +199,118 @@ MOTIVASI = [
     "Tuhan bersama orang-orang yang bersungguh-sungguh dalam kebaikan."
 ]
 
-# --- LOGIKA DASHBOARD ---
-st.title("🏛️ KPU KABUPATEN HULU SUNGAI SELATAN")
-st.caption("O'lia Software Development v1.0 | Web responsive")
+# --- FUNGSI POP-UP DIALOG ---
+@st.dialog("ABSENSI BERHASIL! 🎉", width="large")
+def show_motivation():
+    quote = random.choice(MOTIVASI)
+    st.markdown(f"""
+        <div style="text-align: center; padding: 20px;">
+            <h2 style="color: #ff9d00;">Terima Kasih Atas Dedikasi Anda</h2>
+            <hr style="border-color: #5e1515;">
+            <p style="font-size: 24px; font-style: italic; color: white; line-height: 1.6;">
+                "{quote}"
+            </p>
+            <br>
+            <p style="color: #8a5a5a;">Tetap semangat melayani di KPU HSS!</p>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Tutup & Kembali"):
+        st.rerun()
+
+# --- HEADER ---
+st.markdown("<h1>🏛️ KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#8a5a5a;'>O'lia Software Development v1.0 | Web Responsive Pro</p>", unsafe_allow_html=True)
 
 # --- FORM ABSENSI ---
-with st.container():
-    st.markdown("### 📝 Form Absensi Digital")
-    c1, c2, c3 = st.columns([1, 2, 2])
+st.markdown("### 📝 Form Absensi Digital")
+with st.container(border=True):
+    col1, col2, col3 = st.columns([1, 2, 2])
     
-    with c1:
-        input_id = st.text_input("ID PEGAWAI", placeholder="Cth: 6")
-    
-    nama_pegawai = ""
-    if input_id in DB_PEGAWAI:
-        nama_pegawai = DB_PEGAWAI[input_id]['nama']
-        with c2:
-            st.markdown(f"<br><h4 style='color:white;'>{nama_pegawai}</h4>", unsafe_allow_html=True)
-    
-    with c3:
-        jenis = st.selectbox("JENIS ABSENSI", ["Pilih Jenis", "Masuk", "Pulang", "Cuti", "Off Piket", "Izin"])
+    with col1:
+        v_id = st.text_input("ID PEGAWAI", placeholder="Cth: 6")
+        
+    with col2:
+        if v_id in DB_PEGAWAI:
+            st.markdown(f"<br><h3 style='color:white; border:none; padding:0;'>{DB_PEGAWAI[v_id]['nama']}</h3>", unsafe_allow_html=True)
+        else:
+            st.markdown("<br><p style='color:#8a5a5a;'>Masukkan ID yang benar...</p>", unsafe_allow_html=True)
+            
+    with col3:
+        jenis = st.selectbox("JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Off Piket", "Izin"], index=0)
 
     # Input Dinamis
-    status_khusus = ""
+    st.markdown("---")
+    status_val = ""
     tgl_mulai = tgl_selesai = ""
     uraian = output = ""
 
     if jenis == "Masuk":
-        status_khusus = st.radio("Status Kehadiran", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"], horizontal=True)
+        status_val = st.radio("Status Kehadiran", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"], horizontal=True)
     elif jenis == "Cuti":
-        col_t1, col_t2 = st.columns(2)
-        tgl_mulai = col_t1.date_input("Mulai Cuti")
-        tgl_selesai = col_t2.date_input("Sampai Cuti")
+        c_t1, c_t2 = st.columns(2)
+        tgl_mulai = c_t1.date_input("Mulai Cuti")
+        tgl_selesai = c_t2.date_input("Sampai Cuti")
     elif jenis == "Pulang":
-        col_u1, col_u2 = st.columns(2)
-        uraian = col_u1.text_area("Uraian Tugas Hari Ini", height=100)
-        output = col_u2.text_area("Output / Hasil Tugas", height=100)
+        c_u1, c_u2 = st.columns(2)
+        uraian = c_u1.text_area("Uraian Tugas Hari Ini", placeholder="Tuliskan pekerjaan Anda...")
+        output = c_u2.text_area("Output / Hasil Tugas", placeholder="Apa hasil dari pekerjaan tersebut?")
 
-    if st.button("KIRIM ABSENSI"):
-        if input_id not in DB_PEGAWAI:
-            st.error("ID Pegawai tidak ditemukan!")
-        elif jenis == "Pilih Jenis":
-            st.warning("Silakan pilih jenis absensi terlebih dahulu.")
+    if st.button("KIRIM DATA ABSENSI SEKARANG", use_container_width=True):
+        if v_id not in DB_PEGAWAI:
+            st.error("ID Pegawai Salah!")
         else:
-            p = DB_PEGAWAI[input_id]
+            p = DB_PEGAWAI[v_id]
             now = datetime.now()
-            data = {
+            payload = {
                 "sheetName": p["sheet"], "jenis": jenis, "nama": p["nama"],
-                "nip": p["nip"], "unit": p["unit"], "status": status_khusus or jenis,
+                "nip": p["nip"], "unit": p["unit"], "status": status_val or jenis,
                 "tanggal": now.strftime("%d/%m/%Y"), 
                 "hari": ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"][now.weekday()],
                 "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
                 "tglSelesai": tgl_selesai.strftime("%d/%m/%Y") if tgl_selesai else "",
                 "uraian": uraian, "output": output
             }
-            
             try:
-                res = requests.post(URL_APPS_SCRIPT, params=data, timeout=15)
-                st.success(f"Berhasil! {res.text}")
-                st.info(f"💡 Motivasi: {random.choice(MOTIVASI)}")
+                res = requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
                 st.balloons()
+                show_motivation() # PANGGIL POP-UP GEDE
             except:
-                st.error("Gagal terhubung ke server Google.")
+                st.error("Gagal terhubung ke Google Spreadsheet!")
 
-st.divider()
-
-# --- MONITORING (REAL-TIME) ---
+# --- MONITORING ---
 st.markdown("### 📊 Monitoring Kehadiran Hari Ini")
-
-@st.cache_data(ttl=60) # Cache 60 detik agar tidak berat
-def fetch_monitoring():
-    try:
-        response = requests.get(URL_APPS_SCRIPT, timeout=10)
-        return response.json()
-    except:
-        return {}
-
-monitor_data = fetch_monitoring()
-
-if monitor_data:
-    # Header Tabel
-    h_id, h_nama, h_masuk, h_pulang, h_stat, h_ket = st.columns([1, 4, 2, 2, 2, 3])
-    h_id.write("**ID**")
-    h_nama.write("**NAMA PEGAWAI**")
-    h_masuk.write("**MASUK**")
-    h_pulang.write("**PULANG**")
-    h_stat.write("**STATUS**")
-    h_ket.write("**KETERANGAN**")
+try:
+    mon_res = requests.get(URL_APPS_SCRIPT, timeout=10).json()
+    
+    # Header Tabel Pro
+    h1, h2, h3, h4, h5, h6 = st.columns([1, 4, 2, 2, 2, 3])
+    cols_header = [h1, h2, h3, h4, h5, h6]
+    labels = ["ID", "NAMA PEGAWAI", "MASUK", "PULANG", "STATUS", "KETERANGAN"]
+    for c, l in zip(cols_header, labels):
+        c.markdown(f"<p style='color:#8a5a5a; font-weight:bold; text-align:center;'>{l}</p>", unsafe_allow_html=True)
 
     for i in range(1, 31):
-        p_id = str(i)
-        if p_id in DB_PEGAWAI:
-            p = DB_PEGAWAI[p_id]
-            info = monitor_data.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
+        pid = str(i)
+        if pid in DB_PEGAWAI:
+            p = DB_PEGAWAI[pid]
+            inf = mon_res.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
             
-            # Warna Baris Genap
-            bg_color = "#330808" if i % 2 == 0 else "transparent"
+            st.markdown(f"<div class='monitor-row'>", unsafe_allow_html=True)
+            r1, r2, r3, r4, r5, r6 = st.columns([1, 4, 2, 2, 2, 3])
             
-            with st.container():
-                st.markdown(f"""<div style='background-color:{bg_color}; padding:5px; border-radius:5px;'>""", unsafe_allow_html=True)
-                c_id, c_nama, c_masuk, c_pulang, c_stat, c_ket = st.columns([1, 4, 2, 2, 2, 3])
-                
-                c_id.write(p_id)
-                c_nama.write(f"**{p['nama']}**")
-                c_masuk.write(f"**{info['jamMasuk']}**")
-                c_pulang.write(f"**{info['jamPulang']}**")
-                c_stat.write(info['status'])
-                
-                # Warna Keterangan
-                ket = info['keterangan'].upper()
-                color = "#00ff88" # Hijau
-                if any(x in ket for x in ["IZIN", "CUTI", "OFF"]): color = "#ffff00"
-                elif "DINAS" in ket: color = "#e0b0ff"
-                elif "BELUM" in ket: color = "#ff4444"
-                
-                c_ket.markdown(f"<span style='color:{color}; font-weight:bold;'>{ket}</span>", unsafe_allow_html=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-else:
-    st.warning("Data monitoring belum tersedia. Silakan refresh halaman.")
+            r1.markdown(f"<p style='text-align:center;'>{pid}</p>", unsafe_allow_html=True)
+            r2.markdown(f"**{p['nama']}**")
+            r3.markdown(f"<p style='text-align:center; color:#ff9d00; font-family:Consolas;'>{inf['jamMasuk']}</p>", unsafe_allow_html=True)
+            r4.markdown(f"<p style='text-align:center; color:#ff9d00; font-family:Consolas;'>{inf['jamPulang']}</p>", unsafe_allow_html=True)
+            r5.markdown(f"<p style='text-align:center;'>{inf['status']}</p>", unsafe_allow_html=True)
+            
+            ket = inf['keterangan'].upper()
+            k_clr = "#00ff88" # Hadir
+            if "BELUM" in ket: k_clr = "#ff4444"
+            elif any(x in ket for x in ["CUTI", "IZIN", "OFF"]): k_clr = "#ffff00"
+            elif "DINAS" in ket: k_clr = "#e0b0ff"
+            
+            r6.markdown(f"<p style='text-align:center; color:{k_clr}; font-weight:bold;'>{ket}</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+except:
+    st.warning("Sedang memuat data monitoring...")
