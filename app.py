@@ -115,4 +115,104 @@ def get_mon_data():
 
 mon_data = get_mon_data()
 
-# --- LOGIKA WAKTU
+# --- LOGIKA WAKTU ---
+now = datetime.now()
+hari_ini = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][now.weekday()]
+is_weekend = now.weekday() >= 5 
+
+# --- HEADER ---
+st.markdown("<h1>KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
+st.markdown("<p class='software-credit'>O'lia Software Development V.1.4</p>", unsafe_allow_html=True)
+
+# --- FORM ---
+with st.container(border=True):
+    v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Masukkan ID...")
+    pegawai = DB_PEGAWAI.get(v_id)
+    
+    if pegawai:
+        st.markdown(f"<div style='background:rgba(255,215,0,0.1); padding:10px; border-radius:10px; border-left:4px solid #ffd700; color:white; margin-bottom:15px;'><b>Nama Pegawai:</b> {pegawai['nama']}</div>", unsafe_allow_html=True)
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        jenis = st.selectbox("📅 JENIS ABSENSI", ["Masuk", "Pulang", "Cuti", "Izin", "Off"])
+    
+    status_val = ""
+    tgl_mulai = None
+    tgl_selesai = None
+    
+    with col_b:
+        if jenis == "Masuk":
+            status_val = st.selectbox("📍 STATUS KEHADIRAN", ["WFO", "WFH", "Dinas Luar", "Piket Pagi", "Piket Malam"])
+        elif jenis == "Cuti":
+            # Perbaikan: Input tanggal Mulai dan Sampai
+            c1, c2 = st.columns(2)
+            tgl_mulai = c1.date_input("Mulai")
+            tgl_selesai = c2.date_input("Sampai")
+        else:
+            st.markdown("<br>", unsafe_allow_html=True)
+
+    uraian = output = ""
+    if jenis == "Pulang":
+        uraian = st.text_area("📋 URAIAN TUGAS")
+        output = st.text_area("📦 OUTPUT")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- LOGIKA VALIDASI HARI LIBUR & PIKET ---
+    can_send = True
+    libur_msg = ""
+    
+    if is_weekend and pegawai:
+        u_info = mon_data.get(pegawai["sheet"], {})
+        is_piket_now = "PIKET" in str(u_info.get("status", "")).upper()
+
+        if jenis == "Masuk":
+            if status_val not in ["Piket Pagi", "Piket Malam"]:
+                can_send = False
+                libur_msg = f"Hari ini {hari_ini} (Libur). Absen MASUK hanya diperbolehkan untuk Piket."
+        elif jenis == "Pulang":
+            if not is_piket_now:
+                can_send = False
+                libur_msg = "Anda belum absen MASUK PIKET hari ini."
+        elif jenis in ["Cuti", "Off", "Izin"]:
+            can_send = True
+        else:
+            can_send = False
+            libur_msg = "Hari libur. Hanya absensi Piket, Cuti, atau Off yang diizinkan."
+
+    if not can_send and v_id:
+        st.warning(libur_msg)
+
+    # TOMBOL KIRIM
+    left_c, center_c, right_c = st.columns([1, 2, 1])
+    with center_c:
+        if st.button("KIRIM DATA ABSENSI", use_container_width=True, disabled=not can_send):
+            if pegawai:
+                payload = {
+                    "sheetName": pegawai["sheet"], "jenis": jenis, "nama": pegawai["nama"],
+                    "nip": pegawai["nip"], "unit": pegawai["unit"], "status": status_val if jenis == "Masuk" else jenis,
+                    "tanggal": now.strftime("%d/%m/%Y"), "hari": hari_ini,
+                    "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
+                    "tglSelesai": tgl_selesai.strftime("%d/%m/%Y") if tgl_selesai else "",
+                    "uraian": uraian, "output": output
+                }
+                try:
+                    requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
+                    st.balloons()
+                    show_motivation(pegawai['nama'])
+                except: st.error("Gagal terhubung ke Google Spreadsheet!")
+            else: st.error("ID Pegawai Salah!")
+
+# --- MONITORING ---
+st.markdown("<div class='mon-title'>MONITORING KEHADIRAN HARI INI</div>", unsafe_allow_html=True)
+try:
+    for pid in range(1, 31):
+        sid = str(pid)
+        if sid in DB_PEGAWAI:
+            p = DB_PEGAWAI[sid]
+            inf = mon_data.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
+            ket = inf['keterangan'].upper()
+            k_clr = "#00ff88" if "HADIR" in ket else "#ff4444"
+            if any(x in ket for x in ["CUTI", "IZIN", "OFF", "LIBUR"]): k_clr = "#ffff00"
+            st.markdown(f"""<div class="mobile-card"><div class="card-title">{sid}. {p['nama']}</div><div class="card-grid"><div><div class="card-label">Masuk</div><div class="card-val">{inf['jamMasuk']}</div></div><div><div class="card-label">Pulang</div><div class="card-val">{inf['jamPulang']}</div></div><div><div class="card-label">Status</div><div class="card-val">{inf['status']}</div></div><div><div class="card-label">Ket</div><div style="color:{k_clr}; font-size:12px; font-weight:bold;">{ket}</div></div></div></div>""", unsafe_allow_html=True)
+except: st.info("Memproses data...")
