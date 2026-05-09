@@ -179,14 +179,14 @@ MOTIVASI = [
     "Tuhan bersama orang-orang yang bersungguh-sungguh dalam kebaikan."
 ]
 
-# --- FUNGSI POP-UP DIALOG ---
+# --- FUNGSI POP-UP DIALOG (VERSI NETRAL TANPA 'BANG') ---
 @st.dialog("ABSENSI BERHASIL! 🎉", width="large")
 def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
     st.markdown(f"""
         <div style="text-align: center; padding: 10px;">
             <h2 style="color: #ff9d00; margin-bottom: 5px;">Terima Kasih Atas Dedikasi</h2>
-            <h3 style="color: #ffffff; border: none; margin-top: 0; font-size: 32px;">Bang {nama_orang}</h3>
+            <h3 style="color: #ffffff; border: none; margin-top: 0; font-size: 32px;">{nama_orang}</h3>
             <hr style="border-color: #5e1515; margin: 20px 0;">
             <p style="font-size: 26px; font-style: italic; color: white; line-height: 1.6;">
                 "{quote}"
