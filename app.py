@@ -179,17 +179,17 @@ MOTIVASI = [
     "Tuhan bersama orang-orang yang bersungguh-sungguh dalam kebaikan."
 ]
 
-# --- FUNGSI POP-UP DIALOG (VERSI SEMUA DI TENGAH) ---
-@st.dialog("") # Judul asli dikosongkan agar kita bisa buat judul custom di tengah
+# --- FUNGSI POP-UP DIALOG (VERSI FIX ANTI-ERROR) ---
+@st.dialog(" ") # Berikan spasi satu kali agar tidak dianggap kosong oleh Streamlit
 def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
     st.markdown(f"""
-        <div style="text-align: center; padding: 0px;">
-            <h1 style="font-size: 28px; margin-bottom: 20px;">ABSENSI BERHASIL! 🎉</h1>
-            <h3 style="color: #ff9d00; margin-bottom: 5px; border: none;">Terima Kasih Atas Dedikasi</h3>
-            <h2 style="color: #ffffff; border: none; margin-top: 0; font-size: 35px;">{nama_orang}</h2>
+        <div style="text-align: center; padding: 0px; margin-top: -30px;">
+            <h1 style="font-size: 28px; color: #ff9d00; margin-bottom: 20px;">ABSENSI BERHASIL! 🎉</h1>
+            <h3 style="color: #ffffff; margin-bottom: 5px; border: none; font-size: 20px;">Terima Kasih Atas Dedikasi</h3>
+            <h2 style="color: #ffcc00; border: none; margin-top: 0; font-size: 35px;">{nama_orang}</h2>
             <hr style="border-color: #5e1515; margin: 25px 0;">
-            <p style="font-size: 26px; font-style: italic; color: white; line-height: 1.6; font-weight: 500;">
+            <p style="font-size: 24px; font-style: italic; color: white; line-height: 1.6; font-weight: 500;">
                 "{quote}"
             </p>
             <br>
