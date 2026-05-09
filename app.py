@@ -4,7 +4,7 @@ from datetime import datetime
 import random
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="Absensi KPU HSS - V.1.1", layout="wide")
+st.set_page_config(page_title="Absensi KPU HSS - V.1.2", layout="wide")
 
 # --- DATABASE & CONFIG ---
 URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwLk_OWo1_BaJYaIpQvd78irmthnaHmNlMgII-HI1NrqzFIO-3uNXXoN7tqBm0-95-rIg/exec"
@@ -44,33 +44,27 @@ DB_PEGAWAI = {
 
 MOTIVASI = [
     "Kadada nang labih manis selain lihum pian hari ini.",
-    "Jangan tapi dipikirakan banar gawian tu, kaina hancap tuha muha kaya iwak karing talambat diangkat.",
-    "Dasar lain mun sudah gajihan nih, tihang listrik gin dilihumi",
-    "Biar dodol Kandangan manis rasanya, tatap kalah lawan manisnya lihum pian.",
+    "Biar dunya baputar hancap, hati ulun tatap diam di wadah pian haja.",
+    "Apa nang labih manis: dodol Kandangan kah lihum manis sidin?",
     "Pian ni kaya wadai bingka, manisnya pas, maulah ulun handak tarus.",
-    "Adakah urang nang maulah ikam lihum saurangan pas malihat layar HP?",
-    "Sudahkah pian lihum hari ini? Soalnya lihum pian tu energi gasan ulun.",
     "Kira-kira pian baisi rahasia lah? Rahasia ulun cuma sabuting: ulun sayang lawan pian."
 ]
 
-# --- CSS MEWAH & CENTER ---
+# --- CSS MEWAH ---
 st.markdown("""
     <style>
     .stApp { background: radial-gradient(circle at top, #4d0a0a 0%, #1a0404 100%); }
-    
     div[data-testid="stVerticalBlockBorder"] {
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255, 215, 0, 0.3) !important;
         border-radius: 20px !important;
     }
-
     .stTextInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
         background-color: rgba(0, 0, 0, 0.4) !important;
         color: #ffd700 !important;
         border: 1px solid #5e1515 !important;
         border-radius: 12px !important;
     }
-
     .stButton { display: flex; justify-content: center; }
     .stButton>button {
         background: linear-gradient(135deg, #ff8c00 0%, #d42020 100%) !important;
@@ -79,21 +73,19 @@ st.markdown("""
         padding: 10px 30px !important; border: none !important;
         box-shadow: 0 4px 15px rgba(212, 32, 32, 0.4) !important;
     }
-    .stButton>button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed !important; }
-
+    .stButton>button:disabled { background: #333 !important; color: #666 !important; }
     .mon-title { text-align: center; color: #ffd700; font-size: 24px; font-weight: 800; margin-top: 40px; }
     .mobile-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 15px; padding: 15px; margin-bottom: 10px; }
     .card-title { color: #ffd700; font-weight: bold; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; margin-bottom: 8px; }
     .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     .card-label { color: #a87b7b; font-size: 10px; text-transform: uppercase; }
     .card-val { color: #ffffff; font-weight: bold; font-size: 13px; }
-    
     h1 { color: #ffd700 !important; text-align: center; font-weight: 900 !important; margin-bottom: 0px !important; }
     .software-credit { text-align: center; color: #8a5a5a; font-size: 14px; margin-bottom: 20px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- POP UP DIALOG ---
+# --- FUNGSI DIALOG ---
 @st.dialog(" ")
 def show_motivation(nama_orang):
     quote = random.choice(MOTIVASI)
@@ -110,21 +102,32 @@ def show_motivation(nama_orang):
         if st.button("Selesai", use_container_width=True):
             st.rerun()
 
+# --- FETCH DATA MONITORING UNTUK VALIDASI ---
+@st.cache_data(ttl=60)
+def get_monitoring_data():
+    try:
+        return requests.get(URL_APPS_SCRIPT, timeout=10).json()
+    except:
+        return {}
+
+mon_data = get_monitoring_data()
+
 # --- LOGIKA WAKTU & HARI ---
 now = datetime.now()
 hari_ini = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"][now.weekday()]
-is_weekend = now.weekday() >= 5 # 5=Sabtu, 6=Minggu
+is_weekend = now.weekday() >= 5 
 
 # --- HEADER ---
 st.markdown("<h1>KPU KABUPATEN HULU SUNGAI SELATAN</h1>", unsafe_allow_html=True)
-st.markdown("<p class='software-credit'>O'lia Software Development V.1.1</p>", unsafe_allow_html=True)
+st.markdown("<p class='software-credit'>O'lia Software Development V.1.2</p>", unsafe_allow_html=True)
 
 # --- FORM ABSENSI ---
 with st.container(border=True):
     v_id = st.text_input("🆔 ID PEGAWAI", placeholder="Masukkan ID...")
     
-    if v_id in DB_PEGAWAI:
-        st.markdown(f"<div style='background:rgba(255,215,0,0.1); padding:10px; border-radius:10px; border-left:4px solid #ffd700; color:white; margin-bottom:15px;'><b>Nama Pegawai:</b> {DB_PEGAWAI[v_id]['nama']}</div>", unsafe_allow_html=True)
+    pegawai_aktif = DB_PEGAWAI.get(v_id)
+    if pegawai_aktif:
+        st.markdown(f"<div style='background:rgba(255,215,0,0.1); padding:10px; border-radius:10px; border-left:4px solid #ffd700; color:white; margin-bottom:15px;'><b>Nama Pegawai:</b> {pegawai_aktif['nama']}</div>", unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
     with col_a:
@@ -147,18 +150,30 @@ with st.container(border=True):
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- LOGIKA VALIDASI HARI LIBUR ---
+    # --- LOGIKA VALIDASI HARI LIBUR & PIKET (DETEKSI OTOMATIS) ---
     can_send = True
     libur_msg = ""
     
-    if is_weekend:
-        if jenis == "Masuk" and status_val in ["Piket Pagi", "Piket Malam"]:
-            can_send = True
+    if is_weekend and pegawai_aktif:
+        # Cek apakah user ini sudah absen masuk piket hari ini di monitoring
+        user_info = mon_data.get(pegawai_aktif["sheet"], {})
+        sudah_piket_masuk = "PIKET" in user_info.get("status", "").upper()
+
+        if jenis == "Masuk":
+            if status_val not in ["Piket Pagi", "Piket Malam"]:
+                can_send = False
+                libur_msg = f"Hari ini {hari_ini} (Libur). Absen MASUK hanya untuk status Piket."
+        elif jenis == "Pulang":
+            # Jika dia belum absen masuk piket, jangan kasih absen pulang
+            if not sudah_piket_masuk:
+                can_send = False
+                libur_msg = f"Anda belum melakukan Absen MASUK PIKET hari ini. Silakan absen Masuk dulu."
         else:
+            # Jenis absen lain (Cuti/Izin/Off) di weekend kita tutup
             can_send = False
             libur_msg = f"Hari ini {hari_ini} (Libur). Hanya diperbolehkan absensi Piket."
 
-    if not can_send:
+    if not can_send and v_id:
         st.warning(libur_msg)
 
     # TOMBOL KIRIM
@@ -168,51 +183,29 @@ with st.container(border=True):
             if v_id in DB_PEGAWAI:
                 p = DB_PEGAWAI[v_id]
                 payload = {
-                    "sheetName": p["sheet"], 
-                    "jenis": jenis, 
-                    "nama": p["nama"],
-                    "nip": p["nip"], 
-                    "unit": p["unit"], 
-                    "status": status_val if jenis == "Masuk" else jenis,
-                    "tanggal": now.strftime("%d/%m/%Y"),
-                    "hari": hari_ini,
+                    "sheetName": p["sheet"], "jenis": jenis, "nama": p["nama"],
+                    "nip": p["nip"], "unit": p["unit"], "status": status_val if jenis == "Masuk" else jenis,
+                    "tanggal": now.strftime("%d/%m/%Y"), "hari": hari_ini,
                     "tglMulai": tgl_mulai.strftime("%d/%m/%Y") if tgl_mulai else "",
-                    "uraian": uraian, 
-                    "output": output
+                    "uraian": uraian, "output": output
                 }
                 try:
                     requests.post(URL_APPS_SCRIPT, params=payload, timeout=15)
                     st.balloons()
                     show_motivation(p['nama'])
-                except:
-                    st.error("Gagal terhubung ke Google Spreadsheet!")
-            else:
-                st.error("ID Pegawai Salah!")
+                except: st.error("Gagal terhubung ke Spreadsheet!")
+            else: st.error("ID Pegawai Salah!")
 
 # --- MONITORING ---
 st.markdown("<div class='mon-title'>MONITORING KEHADIRAN HARI INI</div>", unsafe_allow_html=True)
-
 try:
-    mon_res = requests.get(URL_APPS_SCRIPT, timeout=10).json()
     for pid in range(1, 31):
         sid = str(pid)
         if sid in DB_PEGAWAI:
             p = DB_PEGAWAI[sid]
-            inf = mon_res.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
+            inf = mon_data.get(p["sheet"], {"jamMasuk": "-", "jamPulang": "-", "status": "-", "keterangan": "Belum Absen"})
             ket = inf['keterangan'].upper()
             k_clr = "#00ff88" if "HADIR" in ket else "#ff4444"
             if any(x in ket for x in ["CUTI", "IZIN", "OFF", "LIBUR"]): k_clr = "#ffff00"
-
-            st.markdown(f"""
-                <div class="mobile-card">
-                    <div class="card-title">{sid}. {p['nama']}</div>
-                    <div class="card-grid">
-                        <div><div class="card-label">Masuk</div><div class="card-val">{inf['jamMasuk']}</div></div>
-                        <div><div class="card-label">Pulang</div><div class="card-val">{inf['jamPulang']}</div></div>
-                        <div><div class="card-label">Status</div><div class="card-val">{inf['status']}</div></div>
-                        <div><div class="card-label">Ket</div><div style="color:{k_clr}; font-size:12px; font-weight:bold;">{ket}</div></div>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-except:
-    st.info("Sinkronisasi data sedang berjalan...")
+            st.markdown(f"""<div class="mobile-card"><div class="card-title">{sid}. {p['nama']}</div><div class="card-grid"><div><div class="card-label">Masuk</div><div class="card-val">{inf['jamMasuk']}</div></div><div><div class="card-label">Pulang</div><div class="card-val">{inf['jamPulang']}</div></div><div><div class="card-label">Status</div><div class="card-val">{inf['status']}</div></div><div><div class="card-label">Ket</div><div style="color:{k_clr}; font-size:12px; font-weight:bold;">{ket}</div></div></div></div>""", unsafe_allow_html=True)
+except: st.info("Sinkronisasi data...")
