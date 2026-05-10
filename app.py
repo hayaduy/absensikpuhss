@@ -7,7 +7,7 @@ import random
 st.set_page_config(page_title="Absensi KPU HSS - V.1.5", layout="wide")
 
 # --- DATABASE & CONFIG ---
-URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyHh-yiQREEQJyeKmZEUPGPPAitiHwGxSPxJhQG0TlcPdOmqp7hG5Z3HR7B4ZCgFsYUeQ/exec"
+URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxr0weetaIjTrGZ6TmzWS4I_4VdUARM4NzeAqtdIC0G83Cf74nH3JyjpILSUltpJCAWig/exec"
 
 DB_PEGAWAI = {
     "1": {"nama": "Suwanto", "sheet": "Suwanto", "nip": "19720521 200912 1 001", "unit": "KPU KAB. HULU SUNGAI SELATAN"},
